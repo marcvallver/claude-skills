@@ -2,17 +2,33 @@
 
 # 📚 notebooklm-export
 
-### Keep your **NotebookLM** sources in sync with a **Google Drive** folder — automatically.
+### Keep your **NotebookLM** knowledge base in sync with **Google Drive** — automatically.
+
+<p>
+  <a href="../../LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-22C55E?style=for-the-badge"></a>
+  <img alt="Python 3.8+" src="https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white">
+  <img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-7E57C2?style=for-the-badge">
+</p>
+
+<p><b>⚡ PLUGS INTO</b></p>
+<p>
+  <img alt="NotebookLM" src="https://img.shields.io/badge/NotebookLM-1A73E8?style=for-the-badge&logoColor=white">
+  <img alt="Gemini" src="https://img.shields.io/badge/Gemini-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white">
+  <img alt="Google Drive" src="https://img.shields.io/badge/Google_Drive-4285F4?style=for-the-badge&logo=googledrive&logoColor=white">
+  <img alt="Claude" src="https://img.shields.io/badge/Claude-D97757?style=for-the-badge&logo=claude&logoColor=white">
+</p>
+
+<p><b>🛠️ BUILT WITH</b></p>
+<p>
+  <img alt="rclone" src="https://img.shields.io/badge/rclone-3F87C2?style=for-the-badge&logo=rclone&logoColor=white">
+  <img alt="pandoc" src="https://img.shields.io/badge/pandoc-2C3E50?style=for-the-badge&logo=pandoc&logoColor=white">
+  <img alt="Typst" src="https://img.shields.io/badge/Typst-239DAD?style=for-the-badge&logo=typst&logoColor=white">
+</p>
 
 Convert your local docs (Markdown, Word, HTML…) and a drop-in inbox into **PDFs** on a
 Drive folder mounted with **rclone**, overwriting them *in place* so **Drive keeps each file's ID**
 — which is exactly what makes **NotebookLM (Gemini) auto-sync** re-ingest the new content without
 re-importing anything.
-
-![License](https://img.shields.io/badge/license-MIT-green)
-![Python](https://img.shields.io/badge/python-3.8%2B-blue)
-![Requires](https://img.shields.io/badge/requires-pandoc%20%C2%B7%20typst%20%C2%B7%20rclone-orange)
-![Built for](https://img.shields.io/badge/built%20for-NotebookLM%20%2F%20Gemini-7e57c2)
 
 </div>
 
@@ -213,6 +229,16 @@ Writes must be in-place (overwrite the existing file) to preserve the Drive ID.
 ---
 
 ## 🔍 How it fits Drive + Gemini + NotebookLM
+
+<p align="center">
+  <img alt="Your docs" src="https://img.shields.io/badge/Your_docs-555?style=flat-square&logo=markdown&logoColor=white">
+  ➜
+  <img alt="Google Drive" src="https://img.shields.io/badge/Google_Drive-4285F4?style=flat-square&logo=googledrive&logoColor=white">
+  ➜
+  <img alt="NotebookLM" src="https://img.shields.io/badge/NotebookLM-1A73E8?style=flat-square&logoColor=white">
+  ➜
+  <img alt="Gemini" src="https://img.shields.io/badge/Gemini-8E75B2?style=flat-square&logo=googlegemini&logoColor=white">
+</p>
 
 - **Google Drive** is the transport: a single mounted folder is your whole NotebookLM source set.
 - **NotebookLM** (powered by **Gemini**) imports those PDFs and **auto-syncs** them when their Drive

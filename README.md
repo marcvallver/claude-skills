@@ -7,7 +7,11 @@
 A home for reusable skills and small command-line tools I build to automate real workflows —
 each one self-contained, documented, and free to use.
 
-![License](https://img.shields.io/badge/license-MIT-green)
+<p>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-22C55E?style=for-the-badge"></a>
+  <img alt="Claude Code" src="https://img.shields.io/badge/Claude_Code-D97757?style=for-the-badge&logo=claude&logoColor=white">
+  <img alt="Python 3.8+" src="https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white">
+</p>
 
 </div>
 
