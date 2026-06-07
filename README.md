@@ -36,7 +36,7 @@ each one self-contained, documented, and free to use.
 
 | Skill | What it does |
 | --- | --- |
-| [**notebooklm-export**](skills/notebooklm-export/) | Keep your **NotebookLM** sources in sync with a **Google Drive** folder (via rclone), converting docs + a drop-in inbox to PDF and updating them in place so NotebookLM/Gemini auto-syncs the changes. |
+| [**notebooklm-sync**](skills/notebooklm-sync/) | Keep your **NotebookLM** sources in sync with a **Google Drive** folder (via rclone), converting docs + a drop-in inbox to PDF and updating them in place so NotebookLM/Gemini auto-syncs the changes. |
 
 ---
 
@@ -52,9 +52,9 @@ needs. To use one:
    directly.
 
 ```bash
-# Example: install notebooklm-export as a user-scope skill
+# Example: install notebooklm-sync as a user-scope skill
 mkdir -p ~/.claude/skills
-ln -s "$PWD/skills/notebooklm-export" ~/.claude/skills/notebooklm-export
+ln -s "$PWD/skills/notebooklm-sync" ~/.claude/skills/notebooklm-sync
 ```
 
 ---

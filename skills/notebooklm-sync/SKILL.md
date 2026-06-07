@@ -1,10 +1,10 @@
 ---
-name: notebooklm-export
-description: Sincroniza una carpeta de Google Drive (montada con rclone) con tus fuentes locales + un buzón de entrada, convirtiéndolas a PDF para NotebookLM y conservando el ID de Drive de cada fichero (autosync). Determinista, idempotente (hash de contenido), read-only sobre las fuentes. Requiere pandoc + typst + un mount de rclone. Configurable por notebooklm-export.config.json.
+name: notebooklm-sync
+description: Sincroniza una carpeta de Google Drive (montada con rclone) con tus fuentes locales + un buzón de entrada, convirtiéndolas a PDF para NotebookLM y conservando el ID de Drive de cada fichero (autosync). Determinista, idempotente (hash de contenido), read-only sobre las fuentes. Requiere pandoc + typst + un mount de rclone. Configurable por notebooklm-sync.config.json.
 allowed-tools: Bash, Read
 ---
 
-# notebooklm-export
+# notebooklm-sync
 
 Mantiene las fuentes de **NotebookLM** a partir de **dos orígenes** — un conjunto de **fuentes
 locales** que configuras (Markdown, docx, html…) y un **buzón `Externos/`** para ficheros sueltos —
@@ -28,8 +28,8 @@ contenido sin re-importar. Este tool automatiza ese flujo.
 
 ## Configuración
 
-`notebooklm-export.config.json` (o `--config`); todo tiene defaults sensatos salvo `base`. Ver
-`notebooklm-export.config.example.json` y la **tabla completa en el [README](README.md)**. Bloques:
+`notebooklm-sync.config.json` (o `--config`); todo tiene defaults sensatos salvo `base`. Ver
+`notebooklm-sync.config.example.json` y la **tabla completa en el [README](README.md)**. Bloques:
 
 ```jsonc
 {
@@ -94,7 +94,7 @@ los externos se quedan con el nombre provisional `Externo - <nombre>.pdf`: corre
 `pdftotext`/`pdfinfo` (poppler).
 
 ```bash
-python3 export.py                       # usa ./notebooklm-export.config.json
+python3 export.py                       # usa ./notebooklm-sync.config.json
 python3 export.py --config ruta.json
 python3 export.py --base "~/Drive/NotebookLM" --root . --dry-run
 python3 export.py --force               # reconvierte todo (ignora hash)

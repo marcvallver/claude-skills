@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests de notebooklm-export. Unit (sin dependencias) + integración (requiere pandoc + typst).
+"""Tests de notebooklm-sync. Unit (sin dependencias) + integración (requiere pandoc + typst).
 
     python3 test_export.py
 """
@@ -192,7 +192,7 @@ if shutil.which("pandoc") and shutil.which("typst"):
     chk("Doc - Documento Dos.pdf" in pdfs, "integración: segunda fuente")
     chk("Externo - Mi nota.pdf" in pdfs, f"integración: externo convertido (nombre por fichero) → {pdfs}")
     chk(all(open(os.path.join(nv, f), "rb").read(4) == b"%PDF" for f in pdfs), "integración: PDFs válidos")
-    man = json.load(open(os.path.join(ibase, ".notebooklm-export.json")))
+    man = json.load(open(os.path.join(ibase, ".notebooklm-sync.json")))
     chk(man["items"]["Doc - Documento Uno.pdf"]["origin"] == "source", "integración: manifiesto origin source")
     chk(man["items"]["Externo - Mi nota.pdf"]["origin"] == "externo", "integración: manifiesto origin externo")
     chk(not os.path.isdir(os.path.join(ibase, "Externos", "Carpeta")), "integración: subcarpeta del buzón borrada")

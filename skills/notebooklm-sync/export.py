@@ -14,9 +14,9 @@ Modelo de TRES carpetas, todas bajo `base` (la carpeta de Drive montada):
                      subcarpetas vaciadas. PDF se mueven; no-PDF se convierten y el original se
                      archiva en `_originales/`.
 
-TODO es configurable por `notebooklm-export.config.json` (o `--config`): jerarquía de carpetas,
+TODO es configurable por `notebooklm-sync.config.json` (o `--config`): jerarquía de carpetas,
 fuentes, conversión, tratado de ficheros y comportamiento del asistente en la clasificación. Ver
-`notebooklm-export.config.example.json` y SKILL.md.
+`notebooklm-sync.config.example.json` y SKILL.md.
 
 Reglas:
 - READ-ONLY sobre las fuentes locales. Detección de cambios por **hash de contenido** (no mtime).
@@ -25,7 +25,7 @@ Reglas:
   asistente (Claude) como paso de la skill; el script solo deja un nombre provisional.
 
 Uso:
-    python3 export.py [--config notebooklm-export.config.json] [--dry-run] [--force]
+    python3 export.py [--config notebooklm-sync.config.json] [--dry-run] [--force]
     python3 export.py --base "~/Drive/NotebookLM" --root . --dry-run
 """
 import os
@@ -50,7 +50,7 @@ for _stream in (sys.stdout, sys.stderr):
         pass
 
 HERE = os.path.dirname(os.path.realpath(__file__))
-CONFIG_NAME = "notebooklm-export.config.json"
+CONFIG_NAME = "notebooklm-sync.config.json"
 
 # Mapa por defecto extensión → formato de entrada de pandoc.
 EXT_FMT = {
@@ -68,7 +68,7 @@ DEFAULTS = {
         "nuevos": "Nuevos",
         "externos": "Externos",
         "originales": "_originales",
-        "manifest": ".notebooklm-export.json",
+        "manifest": ".notebooklm-sync.json",
         "indexFile": "_INDICE.md",
         "preserveSubdirs": False,        # true: los externos mantienen su subruta dentro de Nuevos
     },
@@ -117,7 +117,7 @@ def deep_merge(base, override):
 
 def load_config(path):
     """Carga y fusiona el config sobre los DEFAULTS. Devuelve (cfg, config_dir). Si no se pasa
-    `path`, busca ./notebooklm-export.config.json; si tampoco está, usa solo defaults."""
+    `path`, busca ./notebooklm-sync.config.json; si tampoco está, usa solo defaults."""
     user, cfg_dir = {}, os.getcwd()
     if path is None:
         cand = os.path.join(os.getcwd(), CONFIG_NAME)
@@ -444,7 +444,7 @@ def prune_empty_subdirs(externos_dir, originales):
 def write_index(nuevos_dir, index_file, externos_name, nuevos, actualizados, obsoletos, externos_skip, today):
     L = ["# Índice del export para NotebookLM", ""]
     L += [
-        f"> Generado ({today}) por `notebooklm-export`. **No editar a mano.**",
+        f"> Generado ({today}) por `notebooklm-sync`. **No editar a mano.**",
         "> `Nuevos/` = pendientes de ALTA (añádelos a NotebookLM y muévelos a la base).",
         "> La base se actualiza **in-place** (Drive conserva el ID → autosync de NotebookLM).",
         "> Añadir/quitar fuentes en NotebookLM es **manual**.",

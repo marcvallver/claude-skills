@@ -5,11 +5,11 @@ __pycache__/
 venv/
 
 # Config local del usuario (la real lleva su ruta de Drive; el .example sí se versiona)
-notebooklm-export.config.json
-**/notebooklm-export.config.json
+notebooklm-sync.config.json
+**/notebooklm-sync.config.json
 
 # Artefactos de NotebookLM (viven en Drive, nunca en el repo)
-.notebooklm-export.json
+.notebooklm-sync.json
 _INDICE.md
 
 # rclone / secretos — NUNCA versionar

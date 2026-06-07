@@ -12,7 +12,7 @@
     "nuevos": "Nuevos",
     "externos": "Externos",
     "originales": "_originales",
-    "manifest": ".notebooklm-export.json",
+    "manifest": ".notebooklm-sync.json",
     "indexFile": "_INDICE.md",
     "preserveSubdirs": false
   },

@@ -1,6 +1,6 @@
 <div align="center">
 
-# 📚 notebooklm-export
+# 📚 notebooklm-sync
 
 ### Keep your **NotebookLM** knowledge base in sync with **Google Drive** — automatically.
 
@@ -36,7 +36,7 @@ re-importing anything.
 
 ## ✨ What it does
 
-`notebooklm-export` is a small, deterministic tool that maintains a **Google Drive knowledge base
+`notebooklm-sync` is a small, deterministic tool that maintains a **Google Drive knowledge base
 for NotebookLM**. Point it at your documents and an inbox folder, and it will:
 
 - 🔄 **Convert** Markdown / `.docx` / `.html` / `.txt` / … → **PDF** with `pandoc` + `typst`.
@@ -59,14 +59,14 @@ underlying Drive file changes — **as long as the file keeps the same Drive ID.
 break this: they save by writing a temp file and renaming over the target, which on Drive becomes
 *delete + create* → **a brand-new file ID** → NotebookLM keeps pointing at the old, stale file.
 
-`notebooklm-export` writes by **truncating and rewriting the existing file in place** through an
+`notebooklm-sync` writes by **truncating and rewriting the existing file in place** through an
 `rclone mount`, which maps to a Drive `files.update` → **same ID, new revision.** That single detail
 is the whole point, and it's verified end to end.
 
 ```mermaid
 sequenceDiagram
     participant You
-    participant Tool as notebooklm-export
+    participant Tool as notebooklm-sync
     participant Drive as Google Drive
     participant NLM as NotebookLM / Gemini
     You->>Tool: edit a source doc & run
@@ -134,7 +134,7 @@ rclone mount gdrive: ~/gdrive --vfs-cache-mode writes --dir-cache-time 1m --vfs-
 
 ### 3. Configure
 
-Copy `notebooklm-export.config.example.json` → `notebooklm-export.config.json` and edit it:
+Copy `notebooklm-sync.config.example.json` → `notebooklm-sync.config.json` and edit it:
 
 ```jsonc
 {
@@ -170,7 +170,7 @@ Everything is optional except `base` and at least one `sources` rule (or just us
 | `sources[]` | `[]` | Rules in order: `glob` (`**` supported), `label` (filename prefix), `title` (`h1`\|`filename`), `priority` (free metadata). |
 | **`layout`** | | **Directory hierarchy** |
 | `layout.nuevos` / `externos` / `originales` | `Nuevos` / `Externos` / `_originales` | Folder names. |
-| `layout.manifest` / `indexFile` | `.notebooklm-export.json` / `_INDICE.md` | State + index filenames. |
+| `layout.manifest` / `indexFile` | `.notebooklm-sync.json` / `_INDICE.md` | State + index filenames. |
 | `layout.preserveSubdirs` | `false` | Keep the inbox's subfolder structure inside `Nuevos/` (vs flatten). |
 | **`conversion`** | | **Output format & rendering** |
 | `conversion.outputExtension` | `.pdf` | Output extension. |
@@ -209,8 +209,8 @@ provisional name — still correct, just less polished.
 Paste this into Claude (Claude Code) to onboard it to the skill:
 
 ```text
-You have the notebooklm-export skill. I keep my NotebookLM sources in a Google Drive
-folder mounted with rclone (see notebooklm-export.config.json → base).
+You have the notebooklm-sync skill. I keep my NotebookLM sources in a Google Drive
+folder mounted with rclone (see notebooklm-sync.config.json → base).
 
 When I say "sync NotebookLM" or tell you I dropped files in Externos/:
 1. Run a dry run first:   python3 export.py --dry-run
