@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Config local del usuario (la real lleva su ruta de Drive; el .example sí se versiona)
+notebooklm-export.config.json
+**/notebooklm-export.config.json
+
+# Artefactos de NotebookLM (viven en Drive, nunca en el repo)
+.notebooklm-export.json
+_INDICE.md
+
+# rclone / secretos — NUNCA versionar
+rclone.conf
+*.token
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini

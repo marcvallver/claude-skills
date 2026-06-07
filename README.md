@@ -1,0 +1,50 @@
+<div align="center">
+
+# 🧰 claude-skills
+
+**Custom [Claude Code](https://claude.com/claude-code) skills & tooling.**
+
+A home for reusable skills and small command-line tools I build to automate real workflows —
+each one self-contained, documented, and free to use.
+
+![License](https://img.shields.io/badge/license-MIT-green)
+
+</div>
+
+---
+
+## 📦 Skills
+
+| Skill | What it does |
+| --- | --- |
+| [**notebooklm-export**](skills/notebooklm-export/) | Keep your **NotebookLM** sources in sync with a **Google Drive** folder (via rclone), converting docs + a drop-in inbox to PDF and updating them in place so NotebookLM/Gemini auto-syncs the changes. |
+
+---
+
+## 🚀 Using a skill
+
+Each skill lives under [`skills/`](skills/) and ships with its own `README.md`, `SKILL.md`
+(the [Claude Code skill](https://docs.claude.com/en/docs/claude-code) manifest) and any scripts it
+needs. To use one:
+
+1. **As a Claude Code skill** — copy (or symlink) the skill folder into `~/.claude/skills/` (user
+   scope) or `<repo>/.claude/skills/` (project scope). Claude auto-discovers it.
+2. **As a plain CLI tool** — read the skill's `README.md`; most are a single Python script you run
+   directly.
+
+```bash
+# Example: install notebooklm-export as a user-scope skill
+mkdir -p ~/.claude/skills
+ln -s "$PWD/skills/notebooklm-export" ~/.claude/skills/notebooklm-export
+```
+
+---
+
+## 🤝 Contributing
+
+Each skill is independent. Open an issue or PR for bugs, ideas or new skills. Keep skills
+self-contained (their own README + SKILL.md), deterministic where possible, and dependency-light.
+
+## 📄 License
+
+[MIT](LICENSE) © Marc Vallverdú

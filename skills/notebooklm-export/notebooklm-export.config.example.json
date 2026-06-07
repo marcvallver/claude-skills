@@ -1,0 +1,45 @@
+{
+  "base": "~/Drive/NotebookLM",
+  "root": ".",
+
+  "sources": [
+    { "glob": "docs/decisions/*.md", "label": "ADR", "title": "h1", "priority": "alta" },
+    { "glob": "docs/research/*.md", "label": "Research", "title": "h1" },
+    { "glob": "docs/*.md", "label": "", "title": "h1" }
+  ],
+
+  "layout": {
+    "nuevos": "Nuevos",
+    "externos": "Externos",
+    "originales": "_originales",
+    "manifest": ".notebooklm-export.json",
+    "indexFile": "_INDICE.md",
+    "preserveSubdirs": false
+  },
+
+  "conversion": {
+    "outputExtension": ".pdf",
+    "pdfEngine": "typst",
+    "header": "pandoc-header.typ",
+    "extraArgs": [],
+    "formatOverrides": {}
+  },
+
+  "files": {
+    "externosPdf": "move",
+    "archiveOriginals": true,
+    "deleteEmptySubdirs": true,
+    "convertExtensions": null
+  },
+
+  "classification": {
+    "enabled": true,
+    "language": "es",
+    "categories": ["Revista", "Artículo", "Informe", "Apuntes", "Documento"],
+    "nameTemplate": "Externo - {categoria} - {titulo}.pdf",
+    "relevanceField": "relevante",
+    "priorityBuckets": ["proyecto", "tangencial"],
+    "lowConfidence": "flag",
+    "extraInstructions": ""
+  }
+}
