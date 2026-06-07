@@ -13,6 +13,21 @@ each one self-contained, documented, and free to use.
   <img alt="Python 3.8+" src="https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white">
 </p>
 
+<p><b>⚡ PLUGS INTO</b></p>
+<p>
+  <img alt="NotebookLM" src="https://img.shields.io/badge/NotebookLM-1A73E8?style=for-the-badge&logoColor=white">
+  <img alt="Gemini" src="https://img.shields.io/badge/Gemini-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white">
+  <img alt="Google Drive" src="https://img.shields.io/badge/Google_Drive-4285F4?style=for-the-badge&logo=googledrive&logoColor=white">
+  <img alt="Claude" src="https://img.shields.io/badge/Claude-D97757?style=for-the-badge&logo=claude&logoColor=white">
+</p>
+
+<p><b>🛠️ BUILT WITH</b></p>
+<p>
+  <img alt="rclone" src="https://img.shields.io/badge/rclone-3F87C2?style=for-the-badge&logo=rclone&logoColor=white">
+  <img alt="pandoc" src="https://img.shields.io/badge/pandoc-2C3E50?style=for-the-badge&logo=pandoc&logoColor=white">
+  <img alt="Typst" src="https://img.shields.io/badge/Typst-239DAD?style=for-the-badge&logo=typst&logoColor=white">
+</p>
+
 </div>
 
 ---
