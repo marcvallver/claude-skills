@@ -53,6 +53,17 @@ chk(exp.sanitize("trailing... .pdf").startswith("trailing"), "sanitize recorta p
 chk(exp.sanitize("\x00\x01.pdf") == "documento.pdf", "sanitize control chars → fallback")
 chk(len(exp.sanitize("z" * 300 + ".pdf")) <= 155, "sanitize acota longitud")
 chk(exp.sanitize_component("a:b/c") == "ab-c", f"sanitize_component (':' se elimina, '/'→'-') → {exp.sanitize_component('a:b/c')}")
+
+# --------------------------------------------------------------- sha256_source: EOL-agnóstico solo para texto
+_eol = tempfile.mkdtemp()
+_lf, _crlf = os.path.join(_eol, "lf.md"), os.path.join(_eol, "crlf.md")
+open(_lf, "wb").write(b"# T\n\na\nb\n")
+open(_crlf, "wb").write(b"# T\r\n\r\na\r\nb\r\n")
+chk(exp.sha256_source(_lf, "gfm") == exp.sha256_source(_crlf, "gfm"), "sha256_source(texto): CRLF y LF → MISMO hash (portable cross-plataforma)")
+chk(exp.sha256_source(_lf, "docx") != exp.sha256_source(_crlf, "docx"), "sha256_source(binario docx): NO normaliza, bytes crudos")
+chk(exp.sha256_source(_lf, None) == exp.sha256_file(_lf), "sha256_source(None) == sha256_file (copia directa, crudo)")
+chk(exp.sha256_source(_lf, "gfm") == exp.sha256_file(_lf), "sha256_source(LF, texto) == sha256_file(LF) (normalizado = LF)")
+shutil.rmtree(_eol, ignore_errors=True)
 chk(exp.bump("Externo - X.pdf", 2, ".pdf") == "Externo - X (2).pdf", "bump inserta sufijo antes de ext")
 
 # --------------------------------------------------------------- title helpers
