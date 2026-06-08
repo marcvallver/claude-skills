@@ -108,7 +108,10 @@ python3 export.py --force               # reconvierte todo (ignora hash)
 - **Autosync in-place**: sobreescribir un PDF en su sitio (`shutil.copyfile`) a través del mount
   de rclone **conserva el file ID de Drive**. El patrón "atomic save" (temp + rename) lo **rompe**
   (rclone replica delete+create → ID nuevo): el script NO lo usa.
-- **Idempotente por hash de contenido** (no por mtime). Solo reconvierte lo que cambió.
+- **Idempotente por hash de contenido** (no por mtime). Solo reconvierte lo que cambió. El hash de
+  los orígenes de **texto** es **agnóstico al fin de línea** (normaliza CRLF/CR→LF), así el
+  manifiesto es portable entre Windows (CRLF) y Linux/macOS (LF) y no reconvierte todo al alternar
+  de máquina. Los orígenes binarios (docx/odt/epub/pptx) y los PDF (copia directa) se hashean tal cual.
 - **Multiplataforma**: nombres válidos en Windows/macOS/Linux (sin `< > : " / \ | ? *` ni de
   control, sin nombres de dispositivo `CON`/`NUL`…, longitud acotada) + salida UTF-8.
 - **Seguridad**: aborta si `base` cae dentro de `root`, o si la carpeta no parece la de NotebookLM

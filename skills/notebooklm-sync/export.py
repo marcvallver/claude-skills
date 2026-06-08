@@ -279,6 +279,28 @@ def sha256_file(path):
     return h.hexdigest()
 
 
+# Formatos de pandoc cuyo origen es TEXTO (git puede convertir su fin de línea en el checkout
+# según la plataforma); el resto (docx/odt/epub/pptx = contenedores binarios, o None = copia
+# directa) se hashean tal cual.
+_TEXT_FMTS = {"gfm", "markdown", "markdown_strict", "commonmark", "html", "rtf",
+              "rst", "org", "latex", "textile"}
+
+
+def sha256_source(path, from_fmt):
+    """Hash del origen AGNÓSTICO al fin de línea si es texto (normaliza CRLF/CR → LF antes de
+    hashear). Sin esto, `sha256_file` (bytes crudos) ve un origen de texto como cambiado al
+    alternar de plataforma (checkout en Windows CRLF ↔ Linux/macOS LF) y reconvierte de más →
+    NotebookLM re-ingiere todo aunque nada haya cambiado. Normalizar deja el manifiesto portable
+    entre máquinas. Orígenes binarios (docx/odt/epub/pptx) y `from_fmt=None` (copia directa, p.ej.
+    PDF) se hashean tal cual: normalizarlos no tendría sentido."""
+    if from_fmt not in _TEXT_FMTS:
+        return sha256_file(path)
+    with open(path, "rb") as f:
+        data = f.read()
+    data = data.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(data).hexdigest()
+
+
 def convert_doc(src, dst, from_fmt, conv):
     """Convierte (o copia, si from_fmt es None) src → dst IN-PLACE (temp + copia de bytes, para no
     borrar/recrear el destino y conservar su ID en Drive). Fail-loud."""
@@ -509,7 +531,7 @@ def main():
     plan = build_plan(cfg.get("sources", []), root, ext_fmt, out_ext)
     desired = {}  # pdf -> (src, from_fmt, sha, priority)
     for src, pdf, from_fmt, priority in plan:
-        desired[pdf] = (src, from_fmt, sha256_file(src), priority)
+        desired[pdf] = (src, from_fmt, sha256_source(src, from_fmt), priority)   # EOL-agnóstico si es texto
 
     base_pdfs = list_pdfs(base, out_ext)
     nuevos_pdfs = list_pdfs(nuevos_dir, out_ext)
