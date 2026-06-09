@@ -126,9 +126,13 @@ python3 export.py --force               # reconvierte todo (ignora hash)
   máquina puede tardar `--dir-cache-time` en verlo): evita el descuido, no es un mutex distribuido.
   El `--dry-run` no escribe nada y corre sin lock.
 - **El manifiesto es interfaz estable**: `{version, updated_at, notebook?, items}` con
-  `items[nombre] = {origin: source|externo, source, sha, priority?, relevante?}`. Cualquier
-  consumidor externo (un retriever, un uploader a otra plataforma) puede leerlo como catálogo de la
-  base; los campos existentes no cambian de significado sin subir `version`.
+  `items[clave] = {origin: source|externo, source, sha, priority?, <relevanceField>?}`. La clave es
+  el nombre relativo a la carpeta gestionada (en `base/` una vez de alta, o en `Nuevos/` mientras
+  está pendiente; con `preserveSubdirs` puede llevar subruta). El `sha` es EOL-agnóstico solo para
+  **fuentes** de texto; los externos se hashean crudos. El campo de relevancia se llama como diga
+  `classification.relevanceField`. Cualquier consumidor externo (un retriever, un uploader a otra
+  plataforma) puede leerlo como catálogo; los campos existentes no cambian de significado sin
+  subir `version`.
 - **Subcarpetas del buzón**: las que conserven ficheros no convertibles —o **compartidos desde
   otra cuenta** que no puedas borrar (`Error 403`)— se dejan y se reportan. El mount de rclone
   **colapsa nombres duplicados** de Drive (uno queda huérfano → `rclone dedupe`). `_originales/`

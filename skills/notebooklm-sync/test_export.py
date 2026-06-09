@@ -181,11 +181,30 @@ except SystemExit as e:
 old = time.time() - exp.LOCK_STALE_SECONDS - 60
 os.utime(lp, (old, old))
 lp2 = exp.acquire_lock(lkd, ".t.lock")          # huérfano → se reemplaza
-chk(os.path.isfile(lp2), "lock: huérfano (mtime viejo) se reemplaza")
+chk(os.path.isfile(lp2) and time.time() - os.path.getmtime(lp2) < 60,
+    "lock: huérfano (mtime viejo) se reemplaza (mtime vuelve a ser fresco)")
 exp.release_lock(lp2)
 chk(not os.path.exists(lp2), "lock: release lo elimina")
 exp.release_lock(lp2)                           # idempotente: no peta si ya no existe
 chk(True, "lock: release idempotente")
+# lock ILEGIBLE (0 bytes = corrida muerta entre el O_EXCL y el dump): la EDAD decide igualmente
+open(lp, "w", encoding="utf-8").close()
+os.utime(lp, (old, old))
+lp3 = exp.acquire_lock(lkd, ".t.lock")          # vacío + viejo → también se recupera
+chk(json.load(open(lp3, encoding="utf-8")).get("pid") == os.getpid(),
+    "lock: huérfano ILEGIBLE (0 bytes, viejo) se reemplaza — la edad manda")
+exp.release_lock(lp3)
+open(lp, "w", encoding="utf-8").write('{"host": "otra-maquina", "pid"')   # JSON truncado, FRESCO
+try:
+    exp.acquire_lock(lkd, ".t.lock")
+    chk(False, "lock: ilegible pero FRESCO debe seguir abortando")
+except SystemExit as e:
+    chk("otra corrida" in str(e), "lock: ilegible+fresco aborta (titular '?')")
+os.utime(lp, (old, old))
+lp4 = exp.acquire_lock(lkd, ".t.lock")          # truncado + viejo → se recupera
+chk(os.path.isfile(lp4) and time.time() - os.path.getmtime(lp4) < 60,
+    "lock: huérfano TRUNCADO (JSON parcial, viejo) se reemplaza")
+exp.release_lock(lp4)
 shutil.rmtree(lkd, ignore_errors=True)
 
 # --------------------------------------------------------------- prune_empty_subdirs

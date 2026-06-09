@@ -388,21 +388,26 @@ def acquire_lock(base, lock_name):
     for _ in range(2):
         try:
             fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-            with os.fdopen(fd, "w", encoding="utf-8") as f:
-                json.dump(info, f)
-            return path
         except FileExistsError:
+            # La EDAD (mtime) decide la caducidad por sí sola: un lock ilegible (0 bytes /
+            # JSON truncado = corrida muerta entre el O_EXCL y el dump) debe poder caducar
+            # igual, o bloquearía la base para siempre.
             try:
                 age = time.time() - os.path.getmtime(path)
+            except OSError:
+                continue                     # desapareció justo ahora (release ajeno) → reintenta
+            try:
                 with open(path, encoding="utf-8") as f:
                     holder = json.load(f)
             except (OSError, ValueError):
-                age, holder = 0, {}
+                holder = {}                  # ilegible: se reporta titular '?', la edad manda
             if age > LOCK_STALE_SECONDS:
                 print(f"  ⚠ Lock huérfano de {holder.get('host', '?')} "
                       f"({age / 60:.0f} min): lo reemplazo.")
                 try:
                     os.remove(path)
+                except FileNotFoundError:
+                    pass                     # otro lo retiró ya
                 except OSError as e:
                     sys.exit(f"ABORTADO: no puedo retirar el lock huérfano {path}: {e}")
                 continue
@@ -413,6 +418,13 @@ def acquire_lock(base, lock_name):
                 f"desde {holder.get('started', '?')}).\n"
                 f"  Si es un resto de una corrida muerta, bórralo y reintenta."
             )
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                json.dump(info, f)
+        except OSError:
+            release_lock(path)               # no dejar un lock parcial irrecuperable
+            raise
+        return path
     sys.exit(f"ABORTADO: no pude adquirir el lock {path} (carrera con otra corrida).")
 
 

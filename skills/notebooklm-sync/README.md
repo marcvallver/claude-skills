@@ -246,12 +246,16 @@ rely on its shape:
     "url": "https://notebooklm.google.com/notebook/…"
   },
   "items": {
-    "ADR 0001 - Title.pdf": {        // key = filename in the base folder
+    "ADR 0001 - Title.pdf": {        // key = filename relative to the managed folder (lives in
+                                     // base/ once added, or in Nuevos/ while pending; may include
+                                     // a subpath when layout.preserveSubdirs is true)
       "origin": "source",            // "source" (from your sources rules) | "externo" (inbox)
       "source": "docs/decisions/0001-title.md",   // origin path (sources) or original filename (inbox)
-      "sha": "…",                    // content hash of the origin (EOL-agnostic for text)
+      "sha": "…",                    // content hash of the origin (EOL-agnostic for text SOURCES;
+                                     // inbox files are always hashed raw)
       "priority": "alta",            // optional, from the matching sources rule
-      "relevante": true              // optional, written by the classification step
+      "relevante": true              // optional, written by the classification step; the field
+                                     // name is whatever classification.relevanceField says
     }
   }
 }
