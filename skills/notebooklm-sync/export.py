@@ -34,7 +34,9 @@ import sys
 import glob
 import json
 import copy
+import time
 import shutil
+import socket
 import hashlib
 import tempfile
 import argparse
@@ -63,6 +65,8 @@ EXT_FMT = {
 DEFAULTS = {
     "base": None,
     "root": None,
+    "notebook": None,                    # {"name": …, "url": …} del cuaderno destino (metadato; va
+                                         # al manifiesto y al índice para quien consuma la base)
     "sources": [],
     "layout": {
         "nuevos": "Nuevos",
@@ -70,6 +74,7 @@ DEFAULTS = {
         "originales": "_originales",
         "manifest": ".notebooklm-sync.json",
         "indexFile": "_INDICE.md",
+        "lock": ".notebooklm-sync.lock",
         "preserveSubdirs": False,        # true: los externos mantienen su subruta dentro de Nuevos
     },
     "conversion": {
@@ -365,6 +370,71 @@ def guard_base(base, root, lay, dry):
                      f"  ¿Está montado el Drive (rclone)? Comprueba `mountpoint` / `systemctl --user status`.")
 
 
+# --------------------------------------------------------------------------- lock de concurrencia
+
+LOCK_STALE_SECONDS = 3600   # una corrida normal dura minutos; más viejo = lock huérfano
+
+
+def acquire_lock(base, lock_name):
+    """Lock BEST-EFFORT contra corridas concurrentes sobre la misma base (dos máquinas que
+    comparten la carpeta de Drive se pisarían el manifiesto y los PDFs). Crea `lock_name` en la
+    base con O_EXCL; si ya existe y es reciente, aborta diciendo quién lo tiene; si supera
+    LOCK_STALE_SECONDS se considera huérfano (corrida muerta) y se reemplaza. A través de un mount
+    de rclone NO es un mutex de verdad: la otra máquina puede tardar ~dir-cache-time en ver el
+    fichero. Protege del descuido habitual, no de la carrera exacta."""
+    path = os.path.join(base, lock_name)
+    info = {"host": socket.gethostname(), "pid": os.getpid(),
+            "started": datetime.datetime.now().isoformat(timespec="seconds")}
+    for _ in range(2):
+        try:
+            fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        except FileExistsError:
+            # La EDAD (mtime) decide la caducidad por sí sola: un lock ilegible (0 bytes /
+            # JSON truncado = corrida muerta entre el O_EXCL y el dump) debe poder caducar
+            # igual, o bloquearía la base para siempre.
+            try:
+                age = time.time() - os.path.getmtime(path)
+            except OSError:
+                continue                     # desapareció justo ahora (release ajeno) → reintenta
+            try:
+                with open(path, encoding="utf-8") as f:
+                    holder = json.load(f)
+            except (OSError, ValueError):
+                holder = {}                  # ilegible: se reporta titular '?', la edad manda
+            if age > LOCK_STALE_SECONDS:
+                print(f"  ⚠ Lock huérfano de {holder.get('host', '?')} "
+                      f"({age / 60:.0f} min): lo reemplazo.")
+                try:
+                    os.remove(path)
+                except FileNotFoundError:
+                    pass                     # otro lo retiró ya
+                except OSError as e:
+                    sys.exit(f"ABORTADO: no puedo retirar el lock huérfano {path}: {e}")
+                continue
+            sys.exit(
+                f"ABORTADO: hay otra corrida en curso sobre esta base.\n"
+                f"  Lock: {path}\n"
+                f"  Titular: {holder.get('host', '?')} (pid {holder.get('pid', '?')}, "
+                f"desde {holder.get('started', '?')}).\n"
+                f"  Si es un resto de una corrida muerta, bórralo y reintenta."
+            )
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                json.dump(info, f)
+        except OSError:
+            release_lock(path)               # no dejar un lock parcial irrecuperable
+            raise
+        return path
+    sys.exit(f"ABORTADO: no pude adquirir el lock {path} (carrera con otra corrida).")
+
+
+def release_lock(path):
+    try:
+        os.remove(path)
+    except OSError:
+        pass
+
+
 def load_manifest(base, manifest_name):
     try:
         with open(os.path.join(base, manifest_name), encoding="utf-8") as f:
@@ -373,8 +443,10 @@ def load_manifest(base, manifest_name):
         return {}
 
 
-def save_manifest(base, manifest_name, items, today):
+def save_manifest(base, manifest_name, items, today, notebook=None):
     data = {"version": 3, "updated_at": today, "items": items}
+    if notebook:
+        data["notebook"] = notebook
     with open(os.path.join(base, manifest_name), "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2, sort_keys=True)
 
@@ -463,8 +535,14 @@ def prune_empty_subdirs(externos_dir, originales):
 
 # --------------------------------------------------------------------------- índice
 
-def write_index(nuevos_dir, index_file, externos_name, nuevos, actualizados, obsoletos, externos_skip, today):
+def write_index(nuevos_dir, index_file, externos_name, nuevos, actualizados, obsoletos, externos_skip, today,
+                notebook=None):
     L = ["# Índice del export para NotebookLM", ""]
+    if notebook and (notebook.get("name") or notebook.get("url")):
+        nb = f"> Cuaderno de destino: **{notebook.get('name') or '—'}**"
+        if notebook.get("url"):
+            nb += f" — {notebook['url']}"
+        L.append(nb)
     L += [
         f"> Generado ({today}) por `notebooklm-sync`. **No editar a mano.**",
         "> `Nuevos/` = pendientes de ALTA (añádelos a NotebookLM y muévelos a la base).",
@@ -523,6 +601,19 @@ def main():
         sys.exit("ABORTADO: falta 'pandoc' en el PATH.")
 
     guard_base(base, root, lay, args.dry_run)
+    if args.dry_run:                       # el dry-run no escribe nada → corre sin lock
+        return run(args, cfg, base, root, ext_fmt)
+    lock = acquire_lock(base, lay["lock"])
+    try:
+        run(args, cfg, base, root, ext_fmt)
+    finally:
+        release_lock(lock)
+
+
+def run(args, cfg, base, root, ext_fmt):
+    lay, conv, files = cfg["layout"], cfg["conversion"], cfg["files"]
+    out_ext = conv["outputExtension"]
+    notebook = cfg.get("notebook") if isinstance(cfg.get("notebook"), dict) else None
     nuevos_dir = os.path.join(base, lay["nuevos"])
     externos_dir = os.path.join(base, lay["externos"])
     originales_dir = os.path.join(externos_dir, lay["originales"])
@@ -643,9 +734,9 @@ def main():
     manifest = {k: v for k, v in manifest.items() if k in keep}
 
     today = datetime.date.today().isoformat()
-    save_manifest(base, lay["manifest"], manifest, today)
+    save_manifest(base, lay["manifest"], manifest, today, notebook)
     write_index(nuevos_dir, lay["indexFile"], lay["externos"], nuevos_idx, actualizados_idx, obsoletos,
-                [(n, f"{lay['externos']}/{n}") for _, n, _, _ in ext_skip], today)
+                [(n, f"{lay['externos']}/{n}") for _, n, _, _ in ext_skip], today, notebook)
 
     print(f"Base: {base}")
     print(f"  Actualizados en la base (in-place, autosync): {len(actualizados_idx)}")

@@ -2,6 +2,11 @@
   "base": "~/Drive/NotebookLM",
   "root": ".",
 
+  "notebook": {
+    "name": "Mi base de conocimiento",
+    "url": "https://notebooklm.google.com/notebook/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+  },
+
   "sources": [
     { "glob": "docs/decisions/*.md", "label": "ADR", "title": "h1", "priority": "alta" },
     { "glob": "docs/research/*.md", "label": "Research", "title": "h1" },
@@ -14,6 +19,7 @@
     "originales": "_originales",
     "manifest": ".notebooklm-sync.json",
     "indexFile": "_INDICE.md",
+    "lock": ".notebooklm-sync.lock",
     "preserveSubdirs": false
   },
 
