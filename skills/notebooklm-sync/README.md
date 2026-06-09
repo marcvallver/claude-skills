@@ -167,10 +167,12 @@ Everything is optional except `base` and at least one `sources` rule (or just us
 | --- | --- | --- |
 | `base` | — | **(required)** mounted Drive folder. Must be **outside** `root`. |
 | `root` | config dir | Where `sources` globs resolve. |
+| `notebook` | `null` | *(optional)* `{ "name", "url" }` of the NotebookLM notebook this base feeds. Pure metadata: written into the manifest and `_INDICE.md` so any consumer of the folder knows its destination. |
 | `sources[]` | `[]` | Rules in order: `glob` (`**` supported), `label` (filename prefix), `title` (`h1`\|`filename`), `priority` (free metadata). |
 | **`layout`** | | **Directory hierarchy** |
 | `layout.nuevos` / `externos` / `originales` | `Nuevos` / `Externos` / `_originales` | Folder names. |
 | `layout.manifest` / `indexFile` | `.notebooklm-sync.json` / `_INDICE.md` | State + index filenames. |
+| `layout.lock` | `.notebooklm-sync.lock` | Concurrency lock filename (see [FAQ](#-faq--edge-cases)). |
 | `layout.preserveSubdirs` | `false` | Keep the inbox's subfolder structure inside `Nuevos/` (vs flatten). |
 | **`conversion`** | | **Output format & rendering** |
 | `conversion.outputExtension` | `.pdf` | Output extension. |
@@ -228,6 +230,37 @@ Writes must be in-place (overwrite the existing file) to preserve the Drive ID.
 
 ---
 
+## 🧾 The manifest is a stable interface
+
+The manifest (`layout.manifest`, default `.notebooklm-sync.json`) is not an internal detail: it is
+the **machine-readable catalog of your knowledge base**, kept next to the PDFs in the Drive folder.
+Any external consumer — a retriever, an uploader to another platform, a future query layer — can
+rely on its shape:
+
+```jsonc
+{
+  "version": 3,                      // bumped only on breaking changes
+  "updated_at": "2026-06-09",
+  "notebook": {                      // present if configured: the destination notebook
+    "name": "My KB",
+    "url": "https://notebooklm.google.com/notebook/…"
+  },
+  "items": {
+    "ADR 0001 - Title.pdf": {        // key = filename in the base folder
+      "origin": "source",            // "source" (from your sources rules) | "externo" (inbox)
+      "source": "docs/decisions/0001-title.md",   // origin path (sources) or original filename (inbox)
+      "sha": "…",                    // content hash of the origin (EOL-agnostic for text)
+      "priority": "alta",            // optional, from the matching sources rule
+      "relevante": true              // optional, written by the classification step
+    }
+  }
+}
+```
+
+Existing fields never change meaning without a `version` bump; new optional fields may be added.
+
+---
+
 ## 🔍 How it fits Drive + Gemini + NotebookLM
 
 <p align="center">
@@ -257,6 +290,11 @@ preserve Google Drive file ID · pandoc typst PDF.
 
 - **Does it touch my source files?** No. It's **read-only** on your sources; it only writes to the
   Drive `base` folder.
+- **Two machines sharing the same base.** Each run takes a **lock** (`layout.lock`) in the base
+  folder; a concurrent run aborts and tells you who holds it. Locks older than 60 minutes are
+  considered orphaned and replaced. Through an rclone mount this is **best-effort** (the other
+  machine may take up to `--dir-cache-time` to see it) — it prevents the everyday collision, it is
+  not a distributed mutex. `--dry-run` writes nothing and runs without the lock.
 - **Duplicate filenames in a Drive folder.** An rclone mount collapses Drive duplicates (it shows
   one); the other is left orphaned — run `rclone dedupe` to clean up.
 - **A file I can't delete (`Error 403`).** Files **shared from another account** can't be removed

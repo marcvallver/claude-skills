@@ -3,7 +3,7 @@
 
     python3 test_export.py
 """
-import importlib.util, os, sys, json, tempfile, shutil, subprocess
+import importlib.util, os, sys, json, time, tempfile, shutil, subprocess
 
 HERE = os.path.dirname(os.path.realpath(__file__))
 spec = importlib.util.spec_from_file_location("exp", os.path.join(HERE, "export.py"))
@@ -168,6 +168,26 @@ chk(len(plan_col) == 2, f"build_plan: ambas fuentes presentes (no pérdida silen
 chk(len(set(col_names)) == 2 and any("(2)" in n for n in col_names), f"build_plan: anticolisión por nombre → {col_names}")
 shutil.rmtree(droot, ignore_errors=True)
 
+# --------------------------------------------------------------- lock de concurrencia
+lkd = tempfile.mkdtemp()
+lp = exp.acquire_lock(lkd, ".t.lock")
+chk(os.path.isfile(lp), "lock: se crea en la base")
+chk(json.load(open(lp, encoding="utf-8")).get("host"), "lock: lleva el host titular")
+try:
+    exp.acquire_lock(lkd, ".t.lock")
+    chk(False, "lock: uno fresco debería abortar la segunda corrida")
+except SystemExit as e:
+    chk("otra corrida" in str(e), f"lock: aborta explicando el titular → {e}")
+old = time.time() - exp.LOCK_STALE_SECONDS - 60
+os.utime(lp, (old, old))
+lp2 = exp.acquire_lock(lkd, ".t.lock")          # huérfano → se reemplaza
+chk(os.path.isfile(lp2), "lock: huérfano (mtime viejo) se reemplaza")
+exp.release_lock(lp2)
+chk(not os.path.exists(lp2), "lock: release lo elimina")
+exp.release_lock(lp2)                           # idempotente: no peta si ya no existe
+chk(True, "lock: release idempotente")
+shutil.rmtree(lkd, ignore_errors=True)
+
 # --------------------------------------------------------------- prune_empty_subdirs
 for p, dest, kind, _ in scan:
     if kind != "skip":
@@ -192,6 +212,7 @@ if shutil.which("pandoc") and shutil.which("typst"):
     touch(ibase, "Externos", "Carpeta", "mi-nota.md", body="# Suelto\n\nhola")
     cfg_path = os.path.join(iroot, "nlm.config.json")
     json.dump({"base": ibase, "root": iroot,
+               "notebook": {"name": "KB Test", "url": "https://notebooklm.google.com/notebook/abc"},
                "sources": [{"glob": "docs/*.md", "label": "Doc", "title": "h1"}]},
               open(cfg_path, "w"))
     r = subprocess.run([sys.executable, os.path.join(HERE, "export.py"), "--config", cfg_path],
@@ -206,12 +227,26 @@ if shutil.which("pandoc") and shutil.which("typst"):
     man = json.load(open(os.path.join(ibase, ".notebooklm-sync.json")))
     chk(man["items"]["Doc - Documento Uno.pdf"]["origin"] == "source", "integración: manifiesto origin source")
     chk(man["items"]["Externo - Mi nota.pdf"]["origin"] == "externo", "integración: manifiesto origin externo")
+    chk(man.get("notebook", {}).get("name") == "KB Test", "integración: notebook del config en el manifiesto")
     chk(not os.path.isdir(os.path.join(ibase, "Externos", "Carpeta")), "integración: subcarpeta del buzón borrada")
     chk(os.path.isfile(os.path.join(nv, "_INDICE.md")), "integración: _INDICE.md generado")
+    idx = open(os.path.join(nv, "_INDICE.md"), encoding="utf-8").read()
+    chk("KB Test" in idx, "integración: notebook en la cabecera del índice")
+    chk(not os.path.exists(os.path.join(ibase, ".notebooklm-sync.lock")), "integración: lock liberado tras la corrida")
     # idempotencia: segundo run no reconvierte (sin cambios) y no falla
     r2 = subprocess.run([sys.executable, os.path.join(HERE, "export.py"), "--config", cfg_path],
                         capture_output=True, text=True)
     chk(r2.returncode == 0 and "sin cambios: 0" not in r2.stdout, "integración: segundo run idempotente OK")
+    # lock fresco de "otra máquina" → la corrida aborta; el dry-run (no escribe) pasa igualmente
+    ilock = os.path.join(ibase, ".notebooklm-sync.lock")
+    open(ilock, "w", encoding="utf-8").write('{"host": "otra-maquina", "pid": 1}')
+    r3 = subprocess.run([sys.executable, os.path.join(HERE, "export.py"), "--config", cfg_path],
+                        capture_output=True, text=True)
+    chk(r3.returncode != 0 and "otra corrida" in (r3.stdout + r3.stderr), "integración: lock fresco aborta la corrida")
+    chk(os.path.isfile(ilock), "integración: el lock ajeno no se toca al abortar")
+    r4 = subprocess.run([sys.executable, os.path.join(HERE, "export.py"), "--config", cfg_path, "--dry-run"],
+                        capture_output=True, text=True)
+    chk(r4.returncode == 0, f"integración: dry-run corre sin lock (stderr={r4.stderr[:120]})")
     shutil.rmtree(iroot); shutil.rmtree(ibase)
 else:
     print("  (SKIP integración: falta pandoc o typst)")

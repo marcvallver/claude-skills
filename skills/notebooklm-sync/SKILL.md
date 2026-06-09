@@ -35,10 +35,14 @@ contenido sin re-importar. Este tool automatiza ese flujo.
 {
   "base": "~/Drive/NotebookLM",      // (obligatorio) carpeta de Drive montada; fuera de root
   "root": ".",                        // raíz de los globs (def: carpeta del config)
+  "notebook": {                       // (opcional) cuaderno de NotebookLM que esta base alimenta;
+    "name": "Mi KB",                  // metadato puro: se escribe en el manifiesto y en el índice
+    "url": "https://notebooklm.google.com/notebook/…"
+  },
   "sources": [                        // reglas en orden; sources:[] = solo buzón
     { "glob": "docs/**/*.md", "label": "", "title": "h1", "priority": "alta" }
   ],
-  "layout":         { /* nuevos, externos, originales, manifest, indexFile, preserveSubdirs */ },
+  "layout":         { /* nuevos, externos, originales, manifest, indexFile, lock, preserveSubdirs */ },
   "conversion":     { /* outputExtension, pdfEngine, header, extraArgs, formatOverrides */ },
   "files":          { /* externosPdf(move|copy), archiveOriginals, deleteEmptySubdirs, convertExtensions */ },
   "classification": { /* enabled, language, categories, nameTemplate, priorityBuckets, … */ }
@@ -116,6 +120,15 @@ python3 export.py --force               # reconvierte todo (ignora hash)
   control, sin nombres de dispositivo `CON`/`NUL`…, longitud acotada) + salida UTF-8.
 - **Seguridad**: aborta si `base` cae dentro de `root`, o si la carpeta no parece la de NotebookLM
   (sin manifiesto ni `Nuevos/`/`Externos/`) y no está vacía. Solo toca lo que gestiona.
+- **Lock de concurrencia** (`layout.lock`): si dos máquinas comparten la base (Drive), una corrida
+  crea un lock en la base y la segunda **aborta** con quién lo tiene. Locks de más de 60 min se
+  consideran huérfanos y se reemplazan. Es **best-effort** a través de un mount de rclone (la otra
+  máquina puede tardar `--dir-cache-time` en verlo): evita el descuido, no es un mutex distribuido.
+  El `--dry-run` no escribe nada y corre sin lock.
+- **El manifiesto es interfaz estable**: `{version, updated_at, notebook?, items}` con
+  `items[nombre] = {origin: source|externo, source, sha, priority?, relevante?}`. Cualquier
+  consumidor externo (un retriever, un uploader a otra plataforma) puede leerlo como catálogo de la
+  base; los campos existentes no cambian de significado sin subir `version`.
 - **Subcarpetas del buzón**: las que conserven ficheros no convertibles —o **compartidos desde
   otra cuenta** que no puedas borrar (`Error 403`)— se dejan y se reportan. El mount de rclone
   **colapsa nombres duplicados** de Drive (uno queda huérfano → `rclone dedupe`). `_originales/`
