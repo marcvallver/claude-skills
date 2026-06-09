@@ -6,6 +6,12 @@ allowed-tools: Bash, Read
 
 # notebooklm-sync
 
+> **🧊 SKILL CONGELADA (2026-06-10).** Estable y completa: se usa tal cual, pero **no se le
+> aplican más cambios ni mejoras** (decisión de cierre del proyecto). Si durante una sesión
+> surge una mejora del motor de sync, va a la copia viva de proyecto-beta
+> (`.claude/skills/notebooklm-export/`), NO aquí. No proponer refactors, features ni
+> back-ports a esta skill.
+
 Mantiene las fuentes de **NotebookLM** a partir de **dos orígenes** — un conjunto de **fuentes
 locales** que configuras (Markdown, docx, html…) y un **buzón `Externos/`** para ficheros sueltos —
 convirtiéndolas a **PDF** en una carpeta de **Google Drive montada con rclone**. La lógica vive en
