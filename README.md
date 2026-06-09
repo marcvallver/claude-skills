@@ -34,9 +34,9 @@ each one self-contained, documented, and free to use.
 
 ## 📦 Skills
 
-| Skill | What it does |
-| --- | --- |
-| [**notebooklm-sync**](skills/notebooklm-sync/) | Keep your **NotebookLM** sources in sync with a **Google Drive** folder (via rclone), converting docs + a drop-in inbox to PDF and updating them in place so NotebookLM/Gemini auto-syncs the changes. |
+| Skill | Status | What it does |
+| --- | --- | --- |
+| [**notebooklm-sync**](skills/notebooklm-sync/) | 🧊 **Frozen** (feature-complete, 2026-06) | Keep your **NotebookLM** sources in sync with a **Google Drive** folder (via rclone), converting docs + a drop-in inbox to PDF and updating them in place so NotebookLM/Gemini auto-syncs the changes. |
 
 ---
 

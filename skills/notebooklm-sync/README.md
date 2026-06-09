@@ -34,6 +34,12 @@ re-importing anything.
 
 ---
 
+> [!NOTE]
+> **🧊 Status: feature-complete & frozen (June 2026).** This skill is stable, fully tested
+> (78 unit + end-to-end checks) and does what it set out to do. No further development is
+> planned — it will keep working as long as pandoc/typst/rclone and NotebookLM's Drive
+> auto-sync do. Issues may go unanswered; **forks are welcome** (MIT).
+
 ## ✨ What it does
 
 `notebooklm-sync` is a small, deterministic tool that maintains a **Google Drive knowledge base
