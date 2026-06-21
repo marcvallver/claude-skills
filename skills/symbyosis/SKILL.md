@@ -1,6 +1,6 @@
 ---
 name: symbyosis
-description: Disciplina del vault de coordinación symbyosis (repo b2c-mvms/symbyosis + Obsidian). Úsala al crear o sincronizar briefings, estudios de mercado/técnicos y análisis compartidos con Marc S, o al tocar la capa de coordinación (equipo/). Codifica taxonomía, frontmatter, la regla de frontera con proyecto-beta (enlaza, no recopies), nombres anti-conflicto y el modelo de git híbrido (notas directas a main con auto-sync; estructura por PR). Cero PII, source-honesty.
+description: Disciplina del vault de coordinación symbyosis (repo b2c-mvms/symbyosis + Obsidian). Úsala al crear o sincronizar briefings, estudios de mercado/técnicos y análisis compartidos con Marc S, o al tocar la capa de coordinación (equipo/). Codifica taxonomía, frontmatter, la regla de frontera con Fulgor (enlaza, no recopies), nombres anti-conflicto y el modelo de git híbrido (notas directas a main con auto-sync; estructura por PR). Cero PII, source-honesty.
 allowed-tools: Read, Write, Edit, Bash
 ---
 
@@ -9,8 +9,8 @@ allowed-tools: Read, Write, Edit, Bash
 Disciplina para trabajar el repo **`b2c-mvms/symbyosis`** (clon local
 `~/Projects/symbyosis`), que es a la vez repo git y **vault de Obsidian**. Es el
 espacio de coordinación entre **Marc V** (técnico) y **Marc S** (comercial) para
-**project-beta**: briefings, estudios de mercado/técnicos y análisis. El producto
-vive en `b2c-mvms/proyecto-beta`.
+**Fulgor**: briefings, estudios de mercado/técnicos y análisis. El producto
+vive en `b2c-mvms/Fulgor`.
 
 Invócala cuando: redactes o sincronices un briefing o un estudio/análisis, o
 toques la capa de coordinación (`equipo/`).
@@ -18,13 +18,13 @@ toques la capa de coordinación (`equipo/`).
 ## Regla de frontera (lo primero)
 
 - **Enlaza, no recopies.** Una nota referencia el commit / PR / ADR / entrada de
-  session-log de `proyecto-beta` que resume; no duplica su contenido.
-- Lo que **madura en decisión** se promociona a `proyecto-beta` (ADR vía
+  session-log de `Fulgor` que resume; no duplica su contenido.
+- Lo que **madura en decisión** se promociona a `Fulgor` (ADR vía
   `adr-writer`, o `docs/business/…`); la nota aquí queda como puntero.
 - **Cero PII** (datos personales de proveedores, acuerdos firmados). Toda cifra de
   un estudio lleva **fuente + fecha** (source-honesty).
-- Para leer el producto, Claude usa directamente `~/Projects/proyecto-beta`
-  (el filesystem MCP ya cubre todo `/home/marc`). El symlink `_links/proyecto-beta`
+- Para leer el producto, Claude usa directamente `~/Projects/fulgor`
+  (el filesystem MCP ya cubre todo `/home/marc`). El symlink `_links/fulgor`
   es solo para que el grafo de Obsidian lo abarque, y está gitignored.
 
 ## Taxonomía y nombres
@@ -54,9 +54,9 @@ Templater (esos solo se resuelven en la GUI de Obsidian).
    `AAAA-MM-DD-<slug>-<autor>.md`.
 2. Rellena frontmatter + cuerpo. Para un **briefing**, el cuerpo es el bloque de 5
    campos de `/cierre-sesion` (Foco / Avanzado / Bloqueos / Decisiones / Siguiente).
-3. **Enlaza** (no recopies) lo que resumas de `proyecto-beta`.
+3. **Enlaza** (no recopies) lo que resumas de `Fulgor`.
 
-## Modelo de git (híbrido — distinto a proyecto-beta)
+## Modelo de git (híbrido — distinto a Fulgor)
 
 - **Notas** (briefings/estudios/análisis) → **directo a `main`**. Obsidian Git hace
   pull al abrir + commit-and-sync ~90 s. Desde Claude:
@@ -75,7 +75,7 @@ Templater (esos solo se resuelven en la GUI de Obsidian).
 - Para un estudio de mercado/técnico, usa la skill global **`deep-research`** y
   vuelca el resultado en una nota `market-study` / `technical-study` (con `sources`
   = url + fecha de consulta).
-- Los agentes `business-analyst` / `architect` de `proyecto-beta` siguen valiendo.
+- Los agentes `business-analyst` / `architect` de `Fulgor` siguen valiendo.
 
 ## Sincronización con Marc S
 
